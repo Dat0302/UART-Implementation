@@ -1,0 +1,34 @@
+module hamming_decoder (
+    input  wire [7:0] encoded_in,
+    output wire [3:0] decoded_data,
+    output wire       sec, // Single Error Corrected
+    output wire       ded  // Double Error Detected
+);
+
+    wire s0, s1, s2, s3;
+    wire [3:0] syndrome;
+    wire [7:0] corrected;
+
+    assign s0 = encoded_in[0] ^ encoded_in[2] ^ encoded_in[4] ^ encoded_in[6];
+    assign s1 = encoded_in[1] ^ encoded_in[2] ^ encoded_in[5] ^ encoded_in[6];
+    assign s2 = encoded_in[3] ^ encoded_in[4] ^ encoded_in[5] ^ encoded_in[6];
+    assign s3 = encoded_in[7];
+
+    assign syndrome = {s3, s2, s1, s0};
+    assign corrected = (syndrome == 4'b0000) ? encoded_in :
+                       (syndrome == 4'b0001) ? encoded_in ^ 8'b00000001 :
+                       (syndrome == 4'b0010) ? encoded_in ^ 8'b00000010 :
+                       (syndrome == 4'b0011) ? encoded_in ^ 8'b00000100 :
+                       (syndrome == 4'b0100) ? encoded_in ^ 8'b00001000 :
+                       (syndrome == 4'b0101) ? encoded_in ^ 8'b00010000 :
+                       (syndrome == 4'b0110) ? encoded_in ^ 8'b00100000 :
+                       (syndrome == 4'b0111) ? encoded_in ^ 8'b01000000 :
+                       (syndrome == 4'b1000) ? encoded_in ^ 8'b10000000 :
+                       encoded_in;
+
+    assign decoded_data = {corrected[3], corrected[2], corrected[1], corrected[0]};
+
+    assign sec = (syndrome != 4'b0000) ? 1'b1 : 1'b0;
+    assign ded = 1'b0; 
+
+endmodule

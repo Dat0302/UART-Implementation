@@ -1,0 +1,153 @@
+`timescale 1ns/1ps
+
+module uart_rx_tb;
+
+    // Inputs
+    reg clk_baud;
+    reg rxd;
+    reg Mode;
+    reg [1:0] DWL;
+    reg Rd_bar;
+    reg Reset;
+    
+    // Outputs
+    wire [7:0] D_OUT;
+    wire OE;
+    wire RXRDY;
+    wire PE;
+    wire FE;
+    wire NE;
+    wire SEC;
+    wire DED;
+    
+    // Instantiate UART receiver
+    uart_rx uut (
+        .clk_baud(clk_baud),
+        .rxd(rxd),
+        .Mode(Mode),
+        .DWL(DWL),
+        .Rd_bar(Rd_bar),
+        .Reset(Reset),
+        .D_OUT(D_OUT),
+        .OE(OE),
+        .RXRDY(RXRDY),
+        .PE(PE),
+        .FE(FE),
+        .NE(NE),
+        .SEC(SEC),
+        .DED(DED)
+    );
+    
+    // Baud clock generation (115200 baud)
+    always #4340 clk_baud = ~clk_baud; // 1/115200/2
+    
+    initial begin
+        // Initialize Inputs
+        clk_baud = 0;
+        rxd = 1;
+        Mode = 0;
+        DWL = 2'b11; // 8-bit data
+        Rd_bar = 1;
+        Reset = 1;
+        
+        // Reset system
+        #10000;
+        Reset = 0;
+        #10000;
+        
+        // Test Case 1: Normal mode, no error
+        send_byte(8'hA5); // Send data 0xA5 (10100101)
+        wait(RXRDY);
+        #10000;
+        Rd_bar = 0; // Read data
+        #10000;
+        Rd_bar = 1;
+        
+        // Test Case 2: Normal mode, frame error
+        #20000;
+        send_byte_error(8'h3C); // Send with frame error
+        wait(RXRDY);
+        #10000;
+        Rd_bar = 0;
+        #10000;
+        Rd_bar = 1;
+        
+        // Test Case 3: Hamming mode, single error
+        #20000;
+        Mode = 1;
+        send_hamming(4'b1010, 1); // Send data 1010 with single error
+        wait(RXRDY);
+        #10000;
+        Rd_bar = 0;
+        #10000;
+        Rd_bar = 1;
+        
+        // Finish simulation
+        #50000;
+        $finish;
+    end
+    
+    // Task to send normal byte
+    task send_byte;
+        input [7:0] data;
+        begin
+            rxd = 0; // Start bit
+            #8680;
+            for (integer i = 0; i < 8; i = i + 1) begin
+                rxd = data[i]; // LSB first
+                #8680;
+            end
+            rxd = 1; // Stop bit
+            #8680;
+        end
+    endtask
+    
+    // Task to send byte with frame error
+    task send_byte_error;
+        input [7:0] data;
+        begin
+            rxd = 0; // Start bit
+            #8680;
+            for (integer i = 0; i < 8; i = i + 1) begin
+                rxd = data[i];
+                #8680;
+            end
+            rxd = 0; // Invalid stop bit (should be 1)
+            #8680;
+        end
+    endtask
+    
+    // Task to send Hamming encoded data
+    task send_hamming;
+        input [3:0] data;
+        input inject_error;
+        reg [6:0] hamming;
+        begin
+            // Simple Hamming(7,4) encoding
+            hamming[3] = data[3];
+            hamming[2] = data[2];
+            hamming[1] = data[1];
+            hamming[0] = data[0] ^ data[1] ^ data[3]; // P0
+            hamming[5] = data[0] ^ data[2] ^ data[3]; // P1
+            hamming[6] = data[1] ^ data[2] ^ data[3]; // P2
+            
+            if (inject_error) hamming[2] = ~hamming[2]; // Inject error
+            
+            rxd = 0; // Start bit
+            #8680;
+            for (integer i = 0; i < 7; i = i + 1) begin
+                rxd = hamming[i]; // Send Hamming encoded data
+                #8680;
+            end
+            rxd = 1; // Stop bit
+            #8680;
+        end
+    endtask
+    
+    // Monitor changes
+    initial begin
+        $monitor("Time=%t: rxd=%b, D_OUT=%h, RXRDY=%b, OE=%b, PE=%b, FE=%b, SEC=%b",
+                 $time, rxd, D_OUT, RXRDY, OE, PE, FE, SEC);
+    end
+    
+endmodule

@@ -1,0 +1,32 @@
+#include "sys/alt_stdio.h"
+#include <io.h>
+#include "system.h"
+#include <unistd.h>
+#include <stdio.h>
+
+#define UART_BASE CUSTOM_UART_0_BASE
+
+char number[10] = {'0','1','2','3','4','5','6','7','8','9'};
+
+int main() {
+    int i = 0;
+    char rx_data;
+
+    printf("Start\n");
+
+    while (1) {
+        for (i = 0; i < 100; i++) {
+            IOWR(UART_BASE, 0, number[i / 10]);
+            usleep(1000);
+            IOWR(UART_BASE, 0, number[i % 10]);
+            usleep(1000);
+            IOWR(UART_BASE, 0, '\n');
+            usleep(1000000);
+
+            if (IORD(UART_BASE, 1) & 0x01) {
+                rx_data = IORD(UART_BASE, 0);
+                printf("Received: %c\n", rx_data);
+            }
+        }
+    }
+}

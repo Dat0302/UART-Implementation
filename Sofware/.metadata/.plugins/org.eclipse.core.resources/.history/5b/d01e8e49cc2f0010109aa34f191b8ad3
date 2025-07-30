@@ -1,0 +1,32 @@
+#include "sys/alt_stdio.h"
+#include <io.h>
+#include "system.h"
+#include <unistd.h>
+#include <stdio.h>
+
+void uart_send_char(char c) {
+    IOWR(MY_UART_BASE, 0, c);
+}
+char uart_receive_char() {
+    return IORD(MY_UART_BASE, 0);
+}
+int uart_has_data() {
+    return IORD(MY_UART_BASE, 1) & 0x01;
+}
+
+
+int main() {
+    uart_send_char('H');
+    uart_send_char('i');
+    uart_send_char('\n');
+
+    while (1) {
+        if (uart_has_data()) {
+            char c = uart_receive_char();
+            uart_send_char(c);
+        }
+    }
+
+    return 0;
+}
+

@@ -1,0 +1,53 @@
+module uart_tx (
+    input  wire       clk,        // system clock
+    input  wire       clk_baud,   // baud rate clock
+    input  wire       rst,        // active-high reset
+    input  wire       wr_en,      // write enable (low active in paper, but high here)
+    input  wire [3:0] data_in,    // 4-bit input data
+    output reg        txd,        // UART transmit line
+    output reg        tx_ready    // transmitter ready
+);
+
+    // Internal registers
+    reg [9:0] shift_reg;          // 10-bit shift register: start + 8 encoded + stop
+    reg [3:0] bit_cnt;            // bit counter (max 10)
+    reg       sending;            // sending flag
+
+    wire [7:0] encoded_data;
+
+    // Instantiate Hamming Encoder
+    encoder encoder_inst (
+        .data_in(data_in),
+        .encoded_out(encoded_data)
+    );
+
+    // Transmit FSM
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            txd      <= 1'b1;       // idle line is HIGH
+            shift_reg <= 10'b1111111111;
+            bit_cnt  <= 4'd0;
+            sending  <= 1'b0;
+            tx_ready <= 1'b1;
+        end else begin
+            if (wr_en && !sending) begin
+                // Start transmission when write is enabled and idle
+                shift_reg <= {1'b1, 1'b1, encoded_data, 1'b0};  // stop, parity=1, encoded, start
+                bit_cnt   <= 4'd0;
+                sending   <= 1'b1;
+                tx_ready  <= 1'b0;
+            end else if (sending && clk_baud) begin
+                // Shift data out on each baud tick
+                txd <= shift_reg[0];
+                shift_reg <= {1'b1, shift_reg[9:1]};
+                bit_cnt <= bit_cnt + 1;
+
+                if (bit_cnt == 4'd9) begin
+                    sending <= 1'b0;
+                    tx_ready <= 1'b1;
+                end
+            end
+        end
+    end
+
+endmodule

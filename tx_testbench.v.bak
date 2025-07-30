@@ -1,0 +1,65 @@
+`timescale 1ns/1ps
+
+module tx_testbench;
+
+    // Inputs
+    reg clk_baud;
+    reg reset;
+    reg wr_bar;
+    reg mode;
+    reg [1:0] DWL;
+    reg [7:0] data_in;
+
+    // Outputs
+    wire txd;
+    wire txrdy;
+
+
+    // Instantiate the DUT
+    uart_tx uut (
+        .clk_baud(clk_baud),
+        .reset(reset),
+        .wr_bar(wr_bar),
+        .mode(mode),
+        .DWL(DWL),
+        .data_in(data_in),
+        .txd(txd),
+        .txrdy(txrdy),
+    );
+
+    // Generate system clock (100 MHz)
+
+    // Generate baud clock (~3.125 MHz)
+    initial begin
+        clk_baud = 0;
+        forever #5 clk_baud = ~clk_baud;
+    end
+
+    // Main stimulus process
+    initial begin
+        // Initial states
+        reset   = 1;
+        wr_bar  = 1;
+        mode    = 0;            // Normal mode
+        DWL     = 2'b11;        // 8-bit data
+        data_in = 8'b11010101;  // Sample data
+
+        // Apply reset
+        #20 reset = 0;
+
+        // Wait for system to stabilize
+        #30;
+
+        // Trigger transmission
+        wr_bar = 0;
+        #10 wr_bar = 1;
+
+        // Wait for transmission to complete
+        wait (txrdy == 1);
+
+        #200; // Wait extra time before finishing
+
+        $finish;
+    end
+
+endmodule

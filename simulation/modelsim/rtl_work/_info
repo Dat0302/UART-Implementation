@@ -1,0 +1,65 @@
+m255
+K3
+13
+cModel Technology
+Z0 dD:\SoC\uart\simulation\modelsim
+vhamming_decoder
+Igbi5<El=3?lAE3[7lO1@C2
+V3VnL0ghUTkeVJ?9KBWaAf1
+Z1 dD:\SoC\uart\simulation\modelsim
+w1746494576
+8D:/SoC/uart/hamming_decoder.v
+FD:/SoC/uart/hamming_decoder.v
+L0 1
+Z2 OV;L;10.1d;51
+r1
+31
+Z3 o-vlog01compat -work work -O0
+Z4 !s92 -vlog01compat -work work +incdir+D:/SoC/uart -O0
+!i10b 1
+!s100 EZheNahDzMdRbQjd:n@fQ0
+!s85 0
+!s108 1746591387.156000
+!s107 D:/SoC/uart/hamming_decoder.v|
+!s90 -reportprogress|300|-vlog01compat|-work|work|+incdir+D:/SoC/uart|D:/SoC/uart/hamming_decoder.v|
+!s101 -O0
+vtestbench_rx
+!i10b 1
+!s100 gJeTAQI]Hl7KN>@Ah?DY;3
+IO^KZ0ljQjz:U;gz]J5M6A0
+Ve?USDWZeZA5HSKC12b9oW1
+R1
+w1746591297
+8D:/SoC/uart/testbench_rx.v
+FD:/SoC/uart/testbench_rx.v
+L0 3
+R2
+r1
+!s85 0
+31
+!s108 1746591387.197000
+!s107 D:/SoC/uart/testbench_rx.v|
+!s90 -reportprogress|300|-vlog01compat|-work|work|+incdir+D:/SoC/uart|D:/SoC/uart/testbench_rx.v|
+!s101 -O0
+R3
+R4
+vuart_rx
+I7YKG@<Yz6nUklhM09Z=423
+V9fo9d]2b_V7G`a:<SO@cc0
+R1
+w1746591249
+8D:/SoC/uart/uart_rx.v
+FD:/SoC/uart/uart_rx.v
+L0 1
+R2
+r1
+31
+R3
+R4
+!i10b 1
+!s100 QfhUaOmUgFU@QjnfY>B;60
+!s85 0
+!s108 1746591387.103000
+!s107 D:/SoC/uart/uart_rx.v|
+!s90 -reportprogress|300|-vlog01compat|-work|work|+incdir+D:/SoC/uart|D:/SoC/uart/uart_rx.v|
+!s101 -O0

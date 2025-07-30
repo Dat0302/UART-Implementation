@@ -1,0 +1,28 @@
+#include "sys/alt_stdio.h"
+#include <io.h>
+#include "system.h"
+#include <unistd.h>
+#include <stdio.h>
+
+void uart_send_char(char c) {
+    IOWR(UART_CUSTOM_0_BASE, 0, c);
+}
+char uart_receive_char() {
+    return IORD(UART_CUSTOM_0_BASE, 0);
+}
+int uart_has_data() {
+    return IORD(UART_CUSTOM_0_BASE, 1) & 0x01;
+}
+
+
+int main() {
+
+
+
+    IOWR(UART_CUSTOM_0_BASE, 0, 'A');
+    char c = IORD(UART_CUSTOM_0_BASE, 0);
+    printf("Received: %c\n", c);
+
+    return 0;
+}
+

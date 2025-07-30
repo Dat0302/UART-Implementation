@@ -1,0 +1,192 @@
+`timescale 1ns / 1ps
+
+module controller_tb;
+
+    // Inputs
+    reg clk_baud;
+    reg reset;
+    reg mode;
+    reg [1:0] DWL;
+    reg WR_bar;
+    reg RD_bar;
+    reg RXD;
+    
+    // Outputs
+    wire enable_transmit;
+    wire enable_receive;
+    wire load_data;
+    wire read_data;
+    wire tx_error;
+    wire rx_error;
+    
+    // Instantiate the Unit Under Test (UUT)
+    controller uut (
+        .clk_baud(clk_baud),
+        .reset(reset),
+        .mode(mode),
+        .DWL(DWL),
+        .WR_bar(WR_bar),
+        .RD_bar(RD_bar),
+        .RXD(RXD),
+        .enable_transmit(enable_transmit),
+        .enable_receive(enable_receive),
+        .load_data(load_data),
+        .read_data(read_data),
+        .tx_error(tx_error),
+        .rx_error(rx_error)
+    );
+    
+    // Baud clock generation (115200 baud rate example)
+    parameter BAUD_PERIOD = 8680; // 115200 baud @ 1ns timescale
+    always #(BAUD_PERIOD/2) clk_baud = ~clk_baud;
+    
+    // Task to simulate transmission
+    task simulate_tx;
+        input [7:0] data;
+        begin
+            $display("[%0t] Starting transmission test", $time);
+            
+            // Wait for idle state
+            wait(uut.tx_state == uut.TX_IDLE);
+            
+            // Trigger write
+            WR_bar = 0;
+            #BAUD_PERIOD;
+            WR_bar = 1;
+            
+            // Monitor state transitions
+            $display("[%0t] TX State: IDLE -> %s", $time, 
+                     uut.mode ? "ERROR_CORRECTION" : "NORMAL");
+            
+            // Wait for load_data pulse
+            @(posedge load_data);
+            $display("[%0t] Load data pulse detected", $time);
+            
+            // Monitor full transmission
+            wait(uut.tx_state == uut.TX_STOP);
+            $display("[%0t] Transmission completed", $time);
+        end
+    endtask
+    
+    // Task to simulate reception
+    task simulate_rx;
+        begin
+            $display("[%0t] Starting reception test", $time);
+            
+            // Send start bit
+            RXD = 0;
+            #BAUD_PERIOD;
+            
+            // Monitor state transition
+            wait(uut.rx_state == uut.RX_B0);
+            $display("[%0t] RX State: IDLE -> B0 (Start bit detected)", $time);
+            
+            // Simulate receiving 8 bits of data
+            repeat(8) begin
+                RXD = $random;
+                #BAUD_PERIOD;
+            end
+            
+            // Stop bit
+            RXD = 1;
+            #BAUD_PERIOD;
+            
+            // Wait for read_data signal
+            wait(read_data);
+            $display("[%0t] Data ready to be read", $time);
+            
+            // Trigger read
+            RD_bar = 0;
+            #BAUD_PERIOD;
+            RD_bar = 1;
+        end
+    endtask
+    
+    // Initialize inputs
+    initial begin
+        clk_baud = 0;
+        reset = 1;
+        mode = 0;
+        DWL = 2'b11;
+        WR_bar = 1;
+        RD_bar = 1;
+        RXD = 1; // Idle high
+        
+        // Reset sequence
+        #100;
+        reset = 0;
+        #100;
+        
+        $display("\n=== TEST 1: Normal Transmission (8-bit) ===");
+        DWL = 2'b11;
+        mode = 0;
+        simulate_tx(8'h55);
+        
+        #2000;
+        
+        $display("\n=== TEST 2: Error Correction Mode Transmission ===");
+        mode = 1;
+        simulate_tx(8'h03);
+        
+        #2000;
+        
+        $display("\n=== TEST 3: Normal Reception (8-bit) ===");
+        mode = 0;
+        DWL = 2'b11;
+        simulate_rx();
+        
+        #2000;
+        
+        $display("\n=== TEST 4: Timeout Test ===");
+        // Start reception but don't complete
+        RXD = 0; // Start bit
+        #BAUD_PERIOD;
+        RXD = 1; // Only send 1 bit
+        #(BAUD_PERIOD*20); // Wait longer than timeout
+        
+        if (rx_error)
+            $display("[%0t] Timeout detected correctly", $time);
+        else
+            $display("[%0t] ERROR: Timeout not detected", $time);
+        
+        #2000;
+        
+        $display("\n=== TEST 5: Mixed Operation ===");
+        fork
+            begin
+                // Simultaneous transmit
+                mode = 0;
+                DWL = 2'b10; // 7-bit
+                simulate_tx(8'h7F);
+            end
+            begin
+                // Simultaneous receive
+                #(BAUD_PERIOD*3);
+                simulate_rx();
+            end
+        join
+        
+        #5000;
+        $display("\nAll tests completed");
+        $finish;
+    end
+    
+    // Monitor state changes
+    always @(uut.tx_state) begin
+        $display("[%0t] TX State changed to: %0d", $time, uut.tx_state);
+    end
+    
+    always @(uut.rx_state) begin
+        $display("[%0t] RX State changed to: %0d", $time, uut.rx_state);
+    end
+    
+    // Monitor errors
+    always @(posedge tx_error) begin
+        $display("[%0t] TX Error detected!", $time);
+    end
+    
+    always @(posedge rx_error) begin
+        $display("[%0t] RX Error detected!", $time);
+    end
+    
+endmodule

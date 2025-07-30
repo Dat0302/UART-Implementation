@@ -1,0 +1,19 @@
+#include "system.h"
+#include "io.h"
+#include <stdio.h>
+
+int main() {
+    printf("UART custom test start\n");
+
+    while (1) {
+
+        uint32_t status = IORD(UART_CUSTOM_0_BASE, 1);
+
+        if (status & 0x01) {
+            char c = IORD(UART_CUSTOM_0_BASE, 0);
+            printf("Received: 0x%02X (%c)\n", c, c);
+        }
+    }
+
+    return 0;
+}

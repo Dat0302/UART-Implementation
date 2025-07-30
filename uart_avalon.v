@@ -1,0 +1,105 @@
+module uart_avalon (
+    input  wire        clk,
+    input  wire        reset,
+    input  wire [3:0]  address,
+    input  wire        write,
+	 input  wire        read,
+    input  wire [31:0] writedata,
+    output reg [31:0] readdata,
+    input  wire        rxd,
+    output wire        txd
+);
+
+    reg [7:0]  data_in_reg;
+    reg [1:0]  dwl_reg = 2'b11;
+    reg [2:0]  baud_sel_reg;
+    reg        mode_reg;
+    reg        baud_enable_reg;
+    
+    wire [7:0] d_out_wire;
+    wire       oe_wire;
+    wire       rxrdy_wire;
+    wire       txrdy_wire;
+    wire       pe_wire;
+    wire       fe_wire;
+    wire       ne_wire;
+    wire       sec_wire;
+    wire       ded_wire;
+
+    wire [31:0] status_reg = {
+        24'b0,
+        ded_wire,
+        sec_wire,
+        ne_wire,
+        fe_wire,
+        pe_wire,
+        txrdy_wire,
+        rxrdy_wire
+    };
+
+    wire [31:0] control_reg = {
+        24'b0,
+        baud_enable_reg,
+        baud_sel_reg,
+		  mode_reg,
+        dwl_reg,
+        1'b0
+    };
+
+    top_module uart_core (
+        .clk_in(clk),
+        .reset(reset),
+        .wr_bar(~write),
+        .rd_bar(~read),
+        .data_in(data_in_reg),
+        .rxd(rxd),
+        .mode(mode_reg),
+        .dwl(dwl_reg),
+        .baud_sel(baud_sel_reg),
+        .baud_enable(baud_enable_reg),
+        .txd(txd),
+        .d_out(d_out_wire),
+        .oe(oe_wire),
+        .rxrdy(rxrdy_wire),
+        .txrdy(txrdy_wire),
+        .pe(pe_wire),
+        .fe(fe_wire),
+        .ne(ne_wire),
+        .sec(sec_wire),
+        .ded(ded_wire)
+    );
+
+		always @(posedge clk or posedge reset) begin
+			 if (reset) begin
+				  readdata <= 32'b0;
+			 end else if (read) begin
+				  case (address)
+						4'h0: readdata <= {24'b0, d_out_wire};
+						4'h1: readdata <= status_reg;
+						4'h2: readdata <= control_reg;
+						default: readdata <= 32'b0;
+				  endcase
+			 end
+		end
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            data_in_reg <= 8'b0;
+            dwl_reg <= 2'b11;
+            baud_sel_reg <= 3'b0;
+            mode_reg <= 1'b0;
+            baud_enable_reg <= 1'b0;
+        end else if (write) begin
+            case (address)
+                4'h0: data_in_reg <= writedata[7:0];
+                4'h2: begin
+                    baud_enable_reg <= writedata[7];
+                    baud_sel_reg <= writedata[6:4];
+                    mode_reg <= writedata[2];
+                    dwl_reg <= writedata[1:0];
+                end
+            endcase
+        end
+    end
+
+endmodule

@@ -1,0 +1,49 @@
+# Reading C:/altera/13.0sp1/modelsim_ase/tcl/vsim/pref.tcl 
+# do uart_run_msim_rtl_verilog.do 
+# if {[file exists rtl_work]} {
+# 	vdel -lib rtl_work -all
+# }
+# vlib rtl_work
+# vmap work rtl_work
+# Copying C:\altera\13.0sp1\modelsim_ase\win32aloem/../modelsim.ini to modelsim.ini
+# Modifying modelsim.ini
+# ** Warning: Copied C:\altera\13.0sp1\modelsim_ase\win32aloem/../modelsim.ini to modelsim.ini.
+#          Updated modelsim.ini.
+# 
+# vlog -vlog01compat -work work +incdir+D:/SoC/uart {D:/SoC/uart/uart_rx.v}
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module uart_rx
+# 
+# Top level modules:
+# 	uart_rx
+# vlog -vlog01compat -work work +incdir+D:/SoC/uart {D:/SoC/uart/hamming_decoder.v}
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module hamming_decoder
+# 
+# Top level modules:
+# 	hamming_decoder
+# 
+# vlog -vlog01compat -work work +incdir+D:/SoC/uart {D:/SoC/uart/testbench_rx.v}
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module testbench_rx
+# 
+# Top level modules:
+# 	testbench_rx
+# 
+# vsim -t 1ps -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L cycloneii_ver -L rtl_work -L work -voptargs="+acc"  testbench_rx
+# vsim -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L cycloneii_ver -L rtl_work -L work -voptargs=\"+acc\" -t 1ps testbench_rx 
+# Loading work.testbench_rx
+# Loading work.uart_rx
+# Loading work.hamming_decoder
+# 
+# add wave *
+# view structure
+# .main_pane.structure.interior.cs.body.struct
+# view signals
+# .main_pane.objects.interior.cs.body.tree
+# run -all
+# ** Note: $finish    : D:/SoC/uart/testbench_rx.v(72)
+#    Time: 309320 ns  Iteration: 0  Instance: /testbench_rx
+# Break in Module testbench_rx at D:/SoC/uart/testbench_rx.v line 72
+# Simulation Breakpoint: Break in Module testbench_rx at D:/SoC/uart/testbench_rx.v line 72
+# MACRO ./uart_run_msim_rtl_verilog.do PAUSED at line 18

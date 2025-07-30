@@ -1,0 +1,9 @@
+	component system is
+		port (
+			clk_clk                         : in  std_logic := 'X'; -- clk
+			reset_reset_n                   : in  std_logic := 'X'; -- reset_n
+			custom_uart_0_uart_external_txd : out std_logic;        -- txd
+			custom_uart_0_uart_external_rxd : in  std_logic := 'X'  -- rxd
+		);
+	end component system;
+

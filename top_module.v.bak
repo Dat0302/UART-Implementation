@@ -1,0 +1,71 @@
+module top_module
+ (
+    input  wire        clk_in,      // Clock 10 MHz
+    input  wire        reset,       // Active high reset
+    input  wire        wr_bar,      // Write control (active low)
+    input  wire        rd_bar,      // Read control (active low)
+    input  wire [7:0]  data_in,     // Input data for TX
+    input  wire        rxd,         // Received serial data
+    input  wire        mode,        // 0 = normal, 1 = Hamming
+    input  wire [1:0]  dwl,         // Data word length
+    input  wire [2:0]  baud_sel,    // Baud rate selection
+    input  wire        baud_enable, // Enable baud clock
+
+    output wire        txd,         // Transmitted serial data
+    output wire [7:0]  d_out,       // Output data from RX
+    output wire        oe,          // Output enable
+    output wire        rxrdy,       // Receiver ready
+    output wire        txrdy,       // Transmitter ready
+    output wire        pe,          // Parity error
+    output wire        fe,          // Frame error
+    output wire        ne,          // No error (hamming)
+    output wire        sec,         // Single error corrected
+    output wire        ded          // Double error detected
+);
+
+    // Internal wire
+    wire clk_baud;
+    wire [10:0] tx_shift_debug;
+
+    // Baud rate generator
+    baud_rate_generator baud_gen (
+        .clk_in(clk_in),
+        .reset(reset),
+        .sel(baud_sel),
+        .baud_enable(baud_enable),
+        .clk_baud(clk_baud)
+    );
+
+    // Transmitter
+    uart_tx tx_unit (
+        .clk(clk_in),
+        .clk_baud(clk_baud),
+        .reset(reset),
+        .wr_bar(wr_bar),
+        .mode(mode),
+        .DWL(dwl),
+        .data_in(data_in),
+        .txd(txd),
+        .txrdy(txrdy),
+        .shift_reg_out(tx_shift_debug)  // For debug, optional
+    );
+
+    // Receiver
+    uart_rx rx_unit (
+        .clk_baud(clk_baud),
+        .rxd(rxd),
+        .Mode(mode),
+        .DWL(dwl),
+        .Rd_bar(rd_bar),
+        .Reset(reset),
+        .D_OUT(d_out),
+        .OE(oe),
+        .RXRDY(rxrdy),
+        .PE(pe),
+        .FE(fe),
+        .NE(ne),
+        .SEC(sec),
+        .DED(ded)
+    );
+
+endmodule

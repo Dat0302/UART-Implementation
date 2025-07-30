@@ -1,0 +1,26 @@
+#include "system.h"
+#include <io.h>
+#include <unistd.h>
+#include <stdio.h>
+
+int main() {
+    printf("UART Test Start\n");
+
+    IOWR(UART_CUSTOM_0_BASE, 2, 0x82);
+
+    while (1) {
+
+        if (IORD(UART_CUSTOM_0_BASE, 1) & 0x01) {
+
+            char rx_data = IORD(UART_CUSTOM_0_BASE, 0);
+
+
+            printf("Received: %c (0x%02X)\n", rx_data, rx_data);
+
+            while (!(IORD(UART_CUSTOM_0_BASE, 1) & 0x02));
+            IOWR(UART_CUSTOM_0_BASE, 0, rx_data);
+        }
+        usleep(1000);
+    }
+    return 0;
+}

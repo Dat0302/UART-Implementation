@@ -1,0 +1,33 @@
+#include "sys/alt_stdio.h"
+#include <io.h>
+#include "system.h"
+#include <unistd.h>
+#include <stdio.h>
+
+const char number[10] = {'0','1','2','3','4','5','6','7','8','9'};
+
+int main() {
+    printf("UART Test Started\n");
+    int i;
+    while (1) {
+        for ( i = 0; i < 100; i++) {
+            while (!(IORD(CUSTOM_UART_0_BASE, 1) & 0x02));
+            IOWR(CUSTOM_UART_0_BASE, 0, number[i / 10]);
+            usleep(1000);
+
+            while (!(IORD(CUSTOM_UART_0_BASE, 1) & 0x02));
+            IOWR(CUSTOM_UART_0_BASE, 0, number[i % 10]);
+            usleep(1000);
+
+            while (!(IORD(CUSTOM_UART_0_BASE, 1) & 0x02));
+            IOWR(CUSTOM_UART_0_BASE, 0, '\n');
+            usleep(500000);
+
+            if (IORD(CUSTOM_UART_0_BASE, 1) & 0x01) {
+                char rx_data = IORD(CUSTOM_UART_0_BASE, 0);
+                printf("Received: %c\n", rx_data);
+            }
+        }
+    }
+    return 0;
+}

@@ -1,0 +1,14 @@
+module uart_test(
+		input CLOCK_50,
+		input [0:0] KEY,
+		input UART_RXD,
+		output UART_TXD
+);
+ 
+		system u0(
+			.clk_clk (CLOCK_50),
+			.reset_reset_n (KEY[0]),
+			.custom_uart_0_uart_external_txd (UART_TXD),
+			.custom_uart_0_uart_external_rxd (UART_RXD)
+			);
+endmodule

@@ -1,0 +1,53 @@
+------------------------------------------------------------
+TimeQuest Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow Model Setup 'clk'
+Slack : -2.911
+TNS   : -60.388
+
+Type  : Slow Model Setup 'top_module:uart_core|baud_rate_generator:baud_gen|clk_baud_reg'
+Slack : -2.555
+TNS   : -54.552
+
+Type  : Slow Model Hold 'clk'
+Slack : -2.541
+TNS   : -2.541
+
+Type  : Slow Model Hold 'top_module:uart_core|baud_rate_generator:baud_gen|clk_baud_reg'
+Slack : 0.391
+TNS   : 0.000
+
+Type  : Slow Model Minimum Pulse Width 'clk'
+Slack : -1.380
+TNS   : -41.380
+
+Type  : Slow Model Minimum Pulse Width 'top_module:uart_core|baud_rate_generator:baud_gen|clk_baud_reg'
+Slack : -0.500
+TNS   : -49.000
+
+Type  : Fast Model Setup 'clk'
+Slack : -0.846
+TNS   : -15.383
+
+Type  : Fast Model Setup 'top_module:uart_core|baud_rate_generator:baud_gen|clk_baud_reg'
+Slack : -0.575
+TNS   : -5.504
+
+Type  : Fast Model Hold 'clk'
+Slack : -1.585
+TNS   : -1.585
+
+Type  : Fast Model Hold 'top_module:uart_core|baud_rate_generator:baud_gen|clk_baud_reg'
+Slack : 0.215
+TNS   : 0.000
+
+Type  : Fast Model Minimum Pulse Width 'clk'
+Slack : -1.380
+TNS   : -41.380
+
+Type  : Fast Model Minimum Pulse Width 'top_module:uart_core|baud_rate_generator:baud_gen|clk_baud_reg'
+Slack : -0.500
+TNS   : -49.000
+
+------------------------------------------------------------

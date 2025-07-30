@@ -1,0 +1,25 @@
+#include <io.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <system.h>
+char number[10] = {'0','1','2','3','4','5','6','7','8','9'};
+
+int main() {
+    int i = 0;
+    char rx_data;
+
+    printf("Start\n");
+
+    while (1) {
+        for (i = 0; i < 100; i++) {
+
+            IOWR(UART_CUSTOM_0_BASE, 0, number[i / 10]);
+            usleep(1000);
+            IOWR(UART_CUSTOM_0_BASE, 0, number[i % 10]);
+            usleep(1000);
+            IOWR(UART_CUSTOM_0_BASE, 0, '\n');
+            usleep(1000000);
+
+            }
+        }
+    }

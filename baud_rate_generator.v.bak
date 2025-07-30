@@ -1,0 +1,52 @@
+module baud_rate_generator (
+    input  wire        clk_in,    // System clock (10 MHz)
+    input  wire        reset,     // Reset (active high)
+    input  wire [2:0]  sel,       // Baud rate select
+    input  wire        baud_enable, // Enable signal from Controller
+    output wire        clk_baud   // Baud rate clock output
+);
+
+    reg [15:0] baud_counter;
+    reg        clk_baud_reg;
+
+    always @(posedge clk_in or posedge reset) begin
+        if (reset) begin
+            baud_counter <= 16'd0;
+            clk_baud_reg <= 1'b0;
+        end else if (baud_enable) begin
+            if (sel == 3'b000) begin // 57600 bps
+                if (baud_counter == 16'd173) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b001) begin // 38400 bps
+                if (baud_counter == 16'd260) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b010) begin // 19200 bps
+                if (baud_counter == 16'd520) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b011) begin // 9600 bps
+                if (baud_counter == 16'd1041) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b100) begin // 4800 bps
+                if (baud_counter == 16'd2083) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b101) begin // 2400 bps
+                if (baud_counter == 16'd4166) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b110) begin // 1200 bps
+                if (baud_counter == 16'd8333) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else if (sel == 3'b111) begin // 600 bps
+                if (baud_counter == 16'd16666) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end else begin
+                if (baud_counter == 16'd1041) baud_counter <= 16'd0;
+                else baud_counter <= baud_counter + 1;
+            end
+            if (baud_counter == 16'd0)
+                clk_baud_reg <= ~clk_baud_reg;
+        end
+    end
+
+    assign clk_baud = clk_baud_reg;
+
+endmodule

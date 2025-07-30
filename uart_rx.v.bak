@@ -1,0 +1,48 @@
+module uart_rx (
+    input  wire        clk,
+    input  wire        clk_baud,
+    input  wire        reset,
+    input  wire        enable_receive,
+    input  wire        mode,
+    input  wire [1:0]  DWL,
+    input  wire        rxd,
+    output reg  [7:0]  data_out,
+    output reg         rxrdy,
+    output reg  [7:0]  received_encoded
+);
+
+    reg [9:0] shift_reg;
+    reg [3:0] bit_cnt;
+    reg       receiving;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            shift_reg <= 10'b0;
+            bit_cnt   <= 4'd0;
+            receiving <= 1'b0;
+            rxrdy     <= 1'b0;
+        end else if (enable_receive) begin
+            if (!receiving && rxd == 1'b0) begin
+                receiving <= 1'b1;
+                bit_cnt   <= 4'd0;
+                shift_reg <= 10'b0;
+            end else if (receiving && clk_baud) begin
+                shift_reg <= {rxd, shift_reg[9:1]};
+                bit_cnt <= bit_cnt + 1;
+                if (bit_cnt == 4'd9) begin
+                    receiving <= 1'b0;
+                    rxrdy <= 1'b1;
+                    
+                    if (mode) begin
+                        received_encoded <= shift_reg[7:0];
+                    end else begin
+                        data_out <= shift_reg[7:0];
+                    end
+                end
+            end
+        end else begin
+            rxrdy <= 1'b0;
+        end
+    end
+
+endmodule

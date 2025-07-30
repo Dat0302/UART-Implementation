@@ -1,0 +1,25 @@
+module encoder (
+    input  wire [3:0] data_in,       // 4-bit input data: D3 D2 D1 D0
+    output wire [7:0] encoded_out    // 8-bit encoded output: D0..D3, P0..P2, P_all
+);
+
+    wire d0, d1, d2, d3;
+    wire p0, p1, p2, p_all;
+
+    assign d0 = data_in[0];
+    assign d1 = data_in[1];
+    assign d2 = data_in[2];
+    assign d3 = data_in[3];
+
+    // Hamming parity bits
+    assign p0 = d0 ^ d1 ^ d3;       // P0 = D0 ⊕ D1 ⊕ D3
+    assign p1 = d0 ^ d2 ^ d3;       // P1 = D0 ⊕ D2 ⊕ D3
+    assign p2 = d1 ^ d2 ^ d3;       // P2 = D1 ⊕ D2 ⊕ D3
+
+    // Overall parity (even parity of all 7 bits)
+    assign p_all = d0 ^ d1 ^ d2 ^ d3 ^ p0 ^ p1 ^ p2;
+
+    // Output format: {P_all, P2, P1, P0, D3, D2, D1, D0}
+    assign encoded_out = {d0, d1, d2, d3, p0, p1, p2, p_all};
+
+endmodule	
